@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'/>
+    <title>Mayan Jump 2</title>
+    <meta name='renderer' content='webkit'>
+    <meta name='viewport' content='width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover'/>
+    <meta name='apple-mobile-web-app-capable' content='yes' />
+    <meta name='mobile-web-app-capable' content='yes' />
+    <meta name='full-screen' content='true' />
+    <meta name='x5-fullscreen' content='true' />
+    <meta name='360-fullscreen' content='true' />
+    <meta name='laya' screenorientation='portrait' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+    <meta http-equiv='expires' content='0' />
+    <meta http-equiv='Cache-Control' content='no-siteapp' />
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /*
+         * CRITICAL: LayaAir measures the body element at init time to
+         * determine the WebGL framebuffer size. The game is 750×1334
+         * portrait. We must constrain the body to this aspect ratio
+         * BEFORE any scripts load, otherwise the engine creates a
+         * landscape-shaped canvas that clips the game vertically.
+         *
+         * We use CSS min() to fit the body within the viewport while
+         * maintaining 750:1334 aspect ratio.
+         */
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+        body {
+            /* Fit viewport at 750:1334 portrait aspect ratio */
+            width:  min(100vw, calc(100vh * 750 / 1334));
+            height: min(100vh, calc(100vw * 1334 / 750));
+            overflow: hidden;
+            background-color: #000;
+            /* Center in viewport without transforms */
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            margin: auto;
+        }
+        canvas {
+            display: block;
+        }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            z-index: 9999;
+            pointer-events: none;
+            text-align: center;
+        }
+        #loading .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 12px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <!-- Loading indicator — hidden when game starts -->
+    <div id="loading">
+        <div class="spinner"></div>
+        Loading Mayan Jump...
+    </div>
+
+    <!--
+        Load order matters:
+        1. conch-shim.js  — stub out native APIs before engine loads
+        2. laya.js        — LayaAir engine (2.6MB, unminified)
+        3. utils.min.js   — game utilities (CommonUtils, MathUtils, etc.)
+        4. jump3d.max.js  — game logic (52KB), auto-starts with new LayaAir3D()
+    -->
+    <script src="conch-shim.js"></script>
+    <script src="laya.js" loader='laya'></script>
+    <script src="fix-aspect-ratio.js"></script>
+    <script src="utils.min.js" loader='laya'></script>
+    <script src="jump3d.max.js" loader='laya'></script>
+
+    <script>
+        console.log('[web] Mayan Jump 2 — web boot complete, waiting for engine init...');
+
+        window.addEventListener('resize', function() {
+            // CSS calc() handles body sizing automatically on resize
+        });
+
+        (function checkCanvas() {
+            var canvas = document.querySelector('canvas');
+            if (canvas && canvas.width > 0) {
+                var cr = canvas.getBoundingClientRect();
+                var br = document.body.getBoundingClientRect();
+                console.log('[web] Canvas ready — internal=' + canvas.width + 'x' + canvas.height +
+                            ' viewport=' + window.innerWidth + 'x' + window.innerHeight);
+                console.log('[web]   canvas rect: left=' + Math.round(cr.left) + ' top=' + Math.round(cr.top) +
+                            ' w=' + Math.round(cr.width) + ' h=' + Math.round(cr.height));
+
+                var loading = document.getElementById('loading');
+                if (loading) {
+                    loading.style.opacity = '0';
+                    loading.style.transition = 'opacity 0.3s';
+                    setTimeout(function() { loading.remove(); }, 300);
+                }
+            } else {
+                setTimeout(checkCanvas, 50);
+            }
+        })();
+
+        // Fix Chrome's autoplay policy — aggressively resume audio
+        function unlockAllAudio() {
+            // Resume ALL AudioContexts on the page
+            if (window.Laya && window.Laya.SoundManager) {
+                var sm = window.Laya.SoundManager;
+                // Try direct _audioContext
+                if (sm._audioContext && sm._audioContext.state === 'suspended') {
+                    sm._audioContext.resume();
+                }
+                // Also try the WebAudioSound internal context
+                if (sm._ctx && sm._ctx.state === 'suspended') {
+                    sm._ctx.resume();
+                }
+                console.log('[web] Audio unlock attempted, AudioContext state:',
+                    sm._audioContext ? sm._audioContext.state : 'none');
+            }
+        }
+
+        // Click/touch to unlock audio
+        document.addEventListener('click', unlockAllAudio, { once: true });
+        document.addEventListener('touchstart', unlockAllAudio, { once: true });
+        // Also try keydown (some users navigate with keyboard)
+        document.addEventListener('keydown', unlockAllAudio, { once: true });
+
+        window.onerror = function(msg, url, line, col, err) {
+            console.error('[web] Global error:', msg, 'at', url + ':' + line);
+            var loading = document.getElementById('loading');
+            if (loading) {
+                loading.innerHTML = '<div style="color:#f44;font-size:14px;">⚠️ Error loading game<br><small>' +
+                    String(msg).substring(0, 80) + '</small></div>';
+                loading.style.color = '#f44';
+            }
+        };
+    </script>
+</body>
+</html>

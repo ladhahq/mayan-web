@@ -24,25 +24,30 @@
          * BEFORE any scripts load, otherwise the engine creates a
          * landscape-shaped canvas that clips the game vertically.
          *
-         * We use CSS min() to fit the body within the viewport while
-         * maintaining 750:1334 aspect ratio.
+         * We use dvh (dynamic viewport height) for mobile browsers
+         * that show/hide toolbars (Chrome iOS, Safari). Falls back
+         * to vh on older browsers.
          */
         html {
             width: 100%;
             height: 100%;
+            height: 100dvh;
             overflow: hidden;
             background: #000;
+            /* Flexbox centers body reliably across all browsers,
+               unlike position:fixed + margin:auto which breaks on Chrome iOS. */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         body {
-            /* Fit viewport at 750:1334 portrait aspect ratio */
-            width:  min(100vw, calc(100vh * 750 / 1334));
-            height: min(100vh, calc(100vw * 1334 / 750));
+            /* Fit viewport at 750:1334 portrait aspect ratio.
+               dvh adjusts as browser chrome appears/disappears. */
+            width:  min(100vw, calc(100dvh * 750 / 1334));
+            height: min(100dvh, calc(100vw * 1334 / 750));
             overflow: hidden;
             background-color: #000;
-            /* Center in viewport without transforms */
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            margin: auto;
+            flex-shrink: 0;
         }
         canvas {
             display: block;
@@ -94,8 +99,22 @@
     <script>
         console.log('[web] Mayan Jump 2 — web boot complete, waiting for engine init...');
 
-        window.addEventListener('resize', function() {
-            // CSS calc() handles body sizing automatically on resize
+        // Keep body sized correctly as mobile browser chrome shows/hides.
+        // dvh works on modern browsers but we also set explicit px values
+        // based on actual innerWidth/innerHeight for cross-browser consistency.
+        function updateBodySize() {
+            var vw = window.innerWidth;
+            var vh = window.innerHeight;
+            var w = Math.min(vw, vh * 750 / 1334);
+            var h = Math.min(vh, vw * 1334 / 750);
+            document.body.style.width  = w + 'px';
+            document.body.style.height = h + 'px';
+        }
+        updateBodySize();
+        window.addEventListener('resize', updateBodySize);
+        // Also update on orientation change for mobile
+        window.addEventListener('orientationchange', function() {
+            setTimeout(updateBodySize, 100);
         });
 
         (function checkCanvas() {

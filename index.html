@@ -24,30 +24,31 @@
          * BEFORE any scripts load, otherwise the engine creates a
          * landscape-shaped canvas that clips the game vertically.
          *
-         * We use dvh (dynamic viewport height) for mobile browsers
-         * that show/hide toolbars (Chrome iOS, Safari). Falls back
-         * to vh on older browsers.
+         * dvh/dvw (dynamic viewport units) adjust as mobile browser
+         * chrome appears/disappears, unlike vh/vw which are fixed.
+         *
+         * Centering: position:absolute + translate(-50%,-50%) is the
+         * most reliable method across all browsers including Chrome iOS.
+         * Our fix-aspect-ratio.js patch corrects mouse coordinates for
+         * the transform offset via getBoundingClientRect().
          */
         html {
             width: 100%;
             height: 100%;
-            height: 100dvh;
             overflow: hidden;
             background: #000;
-            /* Flexbox centers body reliably across all browsers,
-               unlike position:fixed + margin:auto which breaks on Chrome iOS. */
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
         body {
-            /* Fit viewport at 750:1334 portrait aspect ratio.
-               dvh adjusts as browser chrome appears/disappears. */
-            width:  min(100vw, calc(100dvh * 750 / 1334));
-            height: min(100dvh, calc(100vw * 1334 / 750));
+            /* Fit viewport at 750:1334 portrait aspect ratio */
+            width:  min(100dvw, calc(100dvh * 750 / 1334));
+            height: min(100dvh, calc(100dvw * 1334 / 750));
             overflow: hidden;
             background-color: #000;
-            flex-shrink: 0;
+            /* Centering — works on every browser */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
         canvas {
             display: block;

@@ -77,6 +77,23 @@ The engine uses `window.innerWidth/innerHeight` to size the WebGL framebuffer. O
 
 The engine's `_canvasTransform.invertTransformPoint()` converts viewport mouse coordinates to design coordinates but doesn't account for the canvas element's position when it's not at viewport (0,0). **Fix:** Patch the transform to subtract `getBoundingClientRect()` offset, correcting hit-testing when the game is centered on screen.
 
+## Browser Compatibility
+
+Tested on iPhone 16 (iOS 18) and desktop (macOS).
+
+| Browser | Platform | Centered | Fits viewport | Notes |
+|---------|----------|----------|---------------|-------|
+| Safari | iOS | ✅ | ✅ | Perfect — fills width and height |
+| Opera | iOS | ✅ | ✅ | Perfect — fills width and height |
+| Arc Search | iOS | ✅ | ✅ | Perfect — fills width and height |
+| Chrome | iOS | ✅ | ❌ | Centered but has black margins left and right |
+| Firefox | iOS | ✅ | ❌ | Centered but has black margins left and right |
+| Chrome | desktop | ✅ | ❌ | Centered, letterboxed on wide screens |
+| Firefox | desktop | ✅ | ❌ | Centered, letterboxed on wide screens |
+| Safari | desktop | ✅ | ❌ | Centered, letterboxed on wide screens |
+
+**Known issue:** Chrome iOS and Firefox iOS don't fill the viewport width, leaving thin black bars on the sides. This is due to how these browsers report `innerWidth` vs the actual visual viewport width. Safari, Opera, and Arc Search handle this correctly. Pull requests welcome.
+
 ## Known Limitations
 
 - **Background music**: Not present in the APK assets (likely handled by the Android native layer)

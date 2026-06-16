@@ -4,6 +4,12 @@
 
 Web port of **Mayan Jump 2**, a 3D endless jumper game extracted from the last public Android APK (2018) by BadDog Game. The game was unlisted from the Play Store and development stopped. This port preserves the original game logic and assets, running directly in a browser using WebGL.
 
+| Desktop | Mobile |
+|---------|--------|
+| ![Desktop screenshot](desktop.png) | ![Mobile screenshot](mobile.png) |
+
+**📝 [Read the full backstory](https://jisena.bearblog.dev/how-i-ported-an-abandoned-android-game-to-the-web-in-a-few-hours-with-ai/)** — how this port was built, step by step.
+
 ## Quick Start
 
 Serve the directory with any HTTP server:

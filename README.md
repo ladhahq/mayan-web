@@ -10,6 +10,8 @@ Web port of **Mayan Jump 2**, a 3D endless jumper game extracted from the last p
 
 **📝 [Read the full backstory](https://jisena.bearblog.dev/how-i-ported-an-abandoned-android-game-to-the-web-in-a-few-hours-with-ai/)** — how this port was built, step by step.
 
+**🎨 [Mayan Plus](https://github.com/ladhahq/mayan-plus)** — enhanced fork with character skins, coin rewards, revive mechanic, TypeScript + Vite toolchain, and more.
+
 ## Quick Start
 
 Serve the directory with any HTTP server:
